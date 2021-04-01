@@ -26,8 +26,13 @@ init:
 	
 	li $v0, 42
 	li $a0, 0
-	li $a1, 3840
+	#li $a1, 3840
+	li $a1, 960
 	syscall
+	li $t7, 4
+	mult $a0, $t7
+	mflo $a0
+	
 	la $t8, obs1
 	add $t2, $0, $a0
 	sw $t2, 0($t8)
@@ -35,6 +40,7 @@ init:
 	jal draw_obstacle1
 	jal draw_ship
 	j main_loop
+	j end
 	
 main_loop:
 	jal move_obstacle1
@@ -104,20 +110,27 @@ return_to_loop:
 	
 keypress_happened:
 	lw $t2, 4($t9)
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	jal reset_ship
+	#addi $sp, $sp, -4
+	#sw $ra, 0($sp)
+	#jal reset_ship
 	beq $t2, 0x77, respond_to_w
 	beq $t2, 0x61, respond_to_a
 	beq $t2, 0x73, respond_to_s
 	beq $t2, 0x64, respond_to_d
+	beq $t2, 0x70, end
 	
 respond_to_w:
 	la $t8, ship
 	lw $s0, 0($t8)
+	
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
+	jal reset_ship
 	addi $s1, $s0, -128
 	sw $s1, 0($t8)
 	jal draw_ship
+	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	j return_to_loop
