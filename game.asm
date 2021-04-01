@@ -26,7 +26,6 @@ init:
 	
 	li $v0, 42
 	li $a0, 0
-	#li $a1, 3840
 	li $a1, 960
 	syscall
 	li $t7, 4
@@ -50,11 +49,11 @@ main_loop:
 reset_ship:
 	la $t8, ship
 	lw $s0, 0($t8)
-	add $s1, $s0, $t0
-	sw $t3, 0($s1)
-	sw $t3, 4($s1)
-	sw $t3, 128($s1)
-	sw $t3, 132($s1)
+	add $s2, $s0, $t0
+	sw $t3, 0($s2)
+	sw $t3, 4($s2)
+	sw $t3, 128($s2)
+	sw $t3, 132($s2)
 	jr $ra	
 	
 draw_ship:
@@ -110,9 +109,6 @@ return_to_loop:
 	
 keypress_happened:
 	lw $t2, 4($t9)
-	#addi $sp, $sp, -4
-	#sw $ra, 0($sp)
-	#jal reset_ship
 	beq $t2, 0x77, respond_to_w
 	beq $t2, 0x61, respond_to_a
 	beq $t2, 0x73, respond_to_s
@@ -123,11 +119,13 @@ respond_to_w:
 	la $t8, ship
 	lw $s0, 0($t8)
 	
+	addi $s1, $s0, -128
+	blt $s1, $0, return_to_loop
+	
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
 	
 	jal reset_ship
-	addi $s1, $s0, -128
 	sw $s1, 0($t8)
 	jal draw_ship
 	
@@ -138,9 +136,20 @@ respond_to_w:
 respond_to_a:
 	la $t8, ship
 	lw $s0, 0($t8)
+	
+	li $s1, 128
+	div $s0, $s1
+	mfhi $s3
+	beq $s3, 0, return_to_loop
+	
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
+	jal reset_ship
 	addi $s1, $s0, -4
 	sw $s1, 0($t8)
 	jal draw_ship
+	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	j return_to_loop
@@ -148,9 +157,18 @@ respond_to_a:
 respond_to_s:
 	la $t8, ship
 	lw $s0, 0($t8)
+	
 	addi $s1, $s0, 128
+	li $s3, 3964
+	bgt $s1, $s3, return_to_loop
+	
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
+	jal reset_ship
 	sw $s1, 0($t8)
 	jal draw_ship
+	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	j return_to_loop
