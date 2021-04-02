@@ -101,12 +101,25 @@ move_obstacle1:
 	jal reset_obstacle1
 	la $t8, obs1
 	lw $s0, 0($t8)
+	
+	li $s1, 128
+	div $s0, $s1
+	mfhi $s3
+	beq $s3, 0, generate_new_obstacle
+	
+move_obstacle1_left:	
 	addi $s1, $s0, -4
 	sw $s1, 0($t8)
 	jal draw_obstacle1
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
 	jr $ra
+	
+generate_new_obstacle:
+	jal obstacle_random_position
+	add $s0, $0, $a0
+	addi $s0, $s0, 4
+	j move_obstacle1_left
 			
 check_input:
 	li $t9, 0xffff0000 
