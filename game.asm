@@ -74,6 +74,7 @@ main_loop:
 	jal check_input
 	jal check_collision_obstacle1
 	jal move_obstacle1
+	jal check_collision_obstacle2
 	jal move_obstacle2
 	li $v0, 32 
 	li $a0, 40
@@ -333,6 +334,49 @@ check_collision_obstacle1:
 	
 	jr $ra
 	
+check_collision_obstacle2:
+	la $t8, ship
+	la $t7, obs2
+	lw $s0, 0($t8)
+	lw $s7, 0($t7)
+	
+	beq $s0, $s7, indicate_collision2
+	addi $s6, $s7, 4
+	beq $s0, $s6, indicate_collision2
+	addi $s6, $s7, 128
+	beq $s0, $s6, indicate_collision2
+	addi $s6, $s7, 132
+	beq $s0, $s6, indicate_collision2
+	
+	addi $s5, $s0, 4
+	beq $s5, $s7, indicate_collision2
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision2
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision2
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision2
+	
+	addi $s5, $s0, 128
+	beq $s5, $s7, indicate_collision2
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision2
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision2
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision2
+	
+	addi $s5, $s0, 132
+	beq $s5, $s7, indicate_collision2
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision2
+	addi $s6, $s7, 124
+	beq $s5, $s6, indicate_collision2
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision2
+	
+	jr $ra
+
 indicate_collision1:
 	addi $sp, $sp, -4
 	sw $ra, 0($sp)
@@ -351,6 +395,30 @@ indicate_collision1:
 	la $t7, obs1
 	sw $a0, 0($t7)
 	jal draw_obstacle1
+	
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	
+	jr $ra						
+	
+indicate_collision2:
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
+	jal reset_obstacle2
+	jal reset_ship
+	jal draw_collision
+	
+	li $v0, 32 
+	li $a0, 900
+	syscall
+	
+	jal draw_ship
+	
+	jal obstacle_random_position2
+	la $t7, obs2
+	sw $a0, 0($t7)
+	jal draw_obstacle2
 	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
