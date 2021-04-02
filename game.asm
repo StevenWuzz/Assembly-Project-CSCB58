@@ -52,8 +52,8 @@ obstacle_random_position:
 	
 main_loop:
 	jal check_input
-	jal move_obstacle1
 	jal check_collision_obstacle1
+	jal move_obstacle1
 	li $v0, 32 
 	li $a0, 40
 	syscall
