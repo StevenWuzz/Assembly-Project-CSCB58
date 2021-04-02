@@ -21,8 +21,11 @@ init:
 	li $t1, 0xff0000 # $t1 stores the red colour code
 	li $t3, 0x000000
 	li $t4, 0x808080
-	addi $t2, $0, 1920
+	
+	li $t2, 1920
 	sw $t2, 0($t8)
+	
+	li $t6, 0x00ffff00
 	
 	jal obstacle_random_position
 	
@@ -50,6 +53,7 @@ obstacle_random_position:
 main_loop:
 	jal check_input
 	jal move_obstacle1
+	jal check_collision_obstacle1
 	li $v0, 32 
 	li $a0, 40
 	syscall
@@ -78,11 +82,11 @@ draw_ship:
 draw_obstacle1:
 	la $t8, obs1
 	lw $s0, 0($t8)
-	add $s7, $s0, $t0
-	sw $t4, 0($s7)
-	sw $t4, 4($s7)
-	sw $t4, 128($s7)
-	sw $t4, 132($s7)
+	add $s2, $s0, $t0
+	sw $t4, 0($s2)
+	sw $t4, 4($s2)
+	sw $t4, 128($s2)
+	sw $t4, 132($s2)
 	jr $ra
 	
 reset_obstacle1:
@@ -217,7 +221,77 @@ respond_to_d:
 	addi $sp, $sp, 4
 	j return_to_loop
 	
-			
+check_collision_obstacle1:
+	la $t8, ship
+	la $t7, obs1
+	lw $s0, 0($t8)
+	lw $s7, 0($t7)
+	
+	beq $s0, $s7, indicate_collision
+	addi $s6, $s7, 4
+	beq $s0, $s6, indicate_collision
+	addi $s6, $s7, 128
+	beq $s0, $s6, indicate_collision
+	addi $s6, $s7, 132
+	beq $s0, $s6, indicate_collision
+	
+	addi $s5, $s0, 4
+	beq $s5, $s7, indicate_collision
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision
+	
+	addi $s5, $s0, 128
+	beq $s5, $s7, indicate_collision
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision
+	
+	addi $s5, $s0, 132
+	beq $s5, $s7, indicate_collision
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision
+	
+	jr $ra
+	
+indicate_collision:
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
+	jal reset_obstacle1
+	jal reset_ship
+	jal draw_collision
+	
+	li $v0, 32 
+	li $a0, 60
+	syscall
+	
+	jal draw_ship
+	
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	
+	jr $ra
+
+draw_collision:
+	add $s3, $s0, $t0
+	sw $t6, 0($s3)
+	sw $t6, 4($s3)
+	sw $t6, 128($s3)
+	sw $t6, 132($s3)
+	
+	jr $ra
+		
 end: 	
 	li $v0, 10 # terminate the program gracefully
 	syscall
