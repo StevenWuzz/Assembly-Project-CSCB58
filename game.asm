@@ -257,9 +257,9 @@ check_collision_obstacle1:
 	beq $s5, $s7, indicate_collision
 	addi $s6, $s7, 4
 	beq $s5, $s6, indicate_collision
-	addi $s6, $s7, 128
+	addi $s6, $s7, 124
 	beq $s5, $s6, indicate_collision
-	addi $s6, $s7, 132
+	addi $s6, $s7, 128
 	beq $s5, $s6, indicate_collision
 	
 	jr $ra
@@ -273,10 +273,15 @@ indicate_collision:
 	jal draw_collision
 	
 	li $v0, 32 
-	li $a0, 60
+	li $a0, 900
 	syscall
 	
 	jal draw_ship
+	
+	jal obstacle_random_position
+	la $t7, obs1
+	sw $a0, 0($t7)
+	jal draw_obstacle1
 	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
