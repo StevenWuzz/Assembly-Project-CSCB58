@@ -24,26 +24,35 @@ init:
 	addi $t2, $0, 1920
 	sw $t2, 0($t8)
 	
-	li $v0, 42
-	li $a0, 0
-	li $a1, 960
-	syscall
-	li $t7, 4
-	mult $a0, $t7
-	mflo $a0
+	jal obstacle_random_position
 	
 	la $t8, obs1
-	add $t2, $0, $a0
-	sw $t2, 0($t8)
+	sw $a0, 0($t8)
 	
 	jal draw_obstacle1
 	jal draw_ship
 	j main_loop
 	j end
 	
+obstacle_random_position:
+	li $v0, 42
+	li $a0, 0
+	li $a1, 30
+	syscall
+	
+	li $s1, 128
+	mult $s1, $a0
+	mflo $a0
+	addi $a0, $a0, 120
+	
+	jr $ra
+	
 main_loop:
-	jal move_obstacle1
 	jal check_input
+	jal move_obstacle1
+	li $v0, 32 
+	li $a0, 40
+	syscall
 	j main_loop
 	
 reset_ship:
@@ -69,11 +78,11 @@ draw_ship:
 draw_obstacle1:
 	la $t8, obs1
 	lw $s0, 0($t8)
-	add $s1, $s0, $t0
-	sw $t4, 0($s1)
-	sw $t4, 4($s1)
-	sw $t4, 128($s1)
-	sw $t4, 132($s1)
+	add $s7, $s0, $t0
+	sw $t4, 0($s7)
+	sw $t4, 4($s7)
+	sw $t4, 128($s7)
+	sw $t4, 132($s7)
 	jr $ra
 	
 reset_obstacle1:
@@ -176,12 +185,25 @@ respond_to_s:
 respond_to_d:
 	la $t8, ship
 	lw $s0, 0($t8)
+	
+	li $s1, 128
+	addi $s4, $s0, 8
+	div $s4, $s1
+	mfhi $s3
+	beq $s3, 0, return_to_loop
+	
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
+	jal reset_ship
 	addi $s1, $s0, 4
 	sw $s1, 0($t8)
 	jal draw_ship
+	
 	lw $ra, 0($sp)
 	addi $sp, $sp, 4
-	j return_to_loop		
+	j return_to_loop
+	
 			
 end: 	
 	li $v0, 10 # terminate the program gracefully
