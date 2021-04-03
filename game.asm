@@ -37,6 +37,11 @@ init:
 	sw $a0, 0($t8)
 	jal draw_obstacle2
 	
+	jal obstacle_random_position3
+	la $t8, obs3
+	sw $a0, 0($t8)
+	jal draw_obstacle3
+	
 	jal draw_ship
 	
 	j main_loop
@@ -61,7 +66,7 @@ obstacle_random_position2:
 	li $a1, 10
 	syscall
 	
-	addi $a0, $a0, 20
+	addi $a0, $a0, 10
 	
 	li $s1, 128
 	mult $s1, $a0
@@ -70,15 +75,35 @@ obstacle_random_position2:
 	
 	jr $ra
 	
+obstacle_random_position3:
+	li $v0, 42
+	li $a0, 0
+	li $a1, 10
+	syscall
+	
+	addi $a0, $a0, 20
+	
+	li $s1, 128
+	mult $s1, $a0
+	mflo $a0
+	addi $a0, $a0, 120
+	
+	jr $ra	
+	
 main_loop:
 	jal check_input
+	
 	jal check_collision_obstacle1
 	jal move_obstacle1
 	jal check_collision_obstacle2
 	jal move_obstacle2
+	jal check_collision_obstacle3
+	jal move_obstacle3
+	
 	li $v0, 32 
 	li $a0, 40
 	syscall
+	
 	j main_loop
 	
 reset_ship:
@@ -121,6 +146,16 @@ draw_obstacle2:
 	sw $t4, 132($s2)
 	jr $ra
 	
+draw_obstacle3:
+	la $t8, obs3
+	lw $s0, 0($t8)
+	add $s2, $s0, $t0
+	sw $t4, 0($s2)
+	sw $t4, 4($s2)
+	sw $t4, 128($s2)
+	sw $t4, 132($s2)
+	jr $ra	
+	
 reset_obstacle1:
 	la $t8, obs1
 	lw $s0, 0($t8)
@@ -140,6 +175,16 @@ reset_obstacle2:
 	sw $t3, 128($s1)
 	sw $t3, 132($s1)
 	jr $ra	
+	
+reset_obstacle3:
+	la $t8, obs3
+	lw $s0, 0($t8)
+	add $s1, $s0, $t0
+	sw $t3, 0($s1)
+	sw $t3, 4($s1)
+	sw $t3, 128($s1)
+	sw $t3, 132($s1)
+	jr $ra		
 
 move_obstacle1:
 	addi $sp, $sp, -4
@@ -167,6 +212,19 @@ move_obstacle2:
 	beq $s3, 0, generate_new_obstacle2
 	j move_obstacle2_left
 	
+move_obstacle3:
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	jal reset_obstacle3
+	la $t8, obs3
+	lw $s0, 0($t8)
+	
+	li $s1, 128
+	div $s0, $s1
+	mfhi $s3
+	beq $s3, 0, generate_new_obstacle3
+	j move_obstacle3_left	
+	
 move_obstacle1_left:	
 	addi $s1, $s0, -4
 	sw $s1, 0($t8)
@@ -183,6 +241,14 @@ move_obstacle2_left:
 	addi $sp, $sp, 4
 	jr $ra
 	
+move_obstacle3_left:	
+	addi $s1, $s0, -4
+	sw $s1, 0($t8)
+	jal draw_obstacle3
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	jr $ra	
+	
 generate_new_obstacle1:
 	jal obstacle_random_position1
 	add $s0, $0, $a0
@@ -194,6 +260,12 @@ generate_new_obstacle2:
 	add $s0, $0, $a0
 	addi $s0, $s0, 4
 	j move_obstacle2_left
+	
+generate_new_obstacle3:
+	jal obstacle_random_position3
+	add $s0, $0, $a0
+	addi $s0, $s0, 4
+	j move_obstacle3_left	
 			
 check_input:
 	li $t9, 0xffff0000 
@@ -209,7 +281,19 @@ keypress_happened:
 	beq $t2, 0x61, respond_to_a
 	beq $t2, 0x73, respond_to_s
 	beq $t2, 0x64, respond_to_d
-	beq $t2, 0x70, end
+	beq $t2, 0x70, restart
+
+restart:
+	jal reset_ship
+	jal reset_obstacle1
+	jal reset_obstacle2
+	jal reset_obstacle3
+	
+	li $v0, 32 
+	li $a0, 600
+	syscall
+	
+	j init
 	
 respond_to_w:
 	la $t8, ship
@@ -376,6 +460,49 @@ check_collision_obstacle2:
 	beq $s5, $s6, indicate_collision2
 	
 	jr $ra
+	
+check_collision_obstacle3:
+	la $t8, ship
+	la $t7, obs3
+	lw $s0, 0($t8)
+	lw $s7, 0($t7)
+	
+	beq $s0, $s7, indicate_collision3
+	addi $s6, $s7, 4
+	beq $s0, $s6, indicate_collision3
+	addi $s6, $s7, 128
+	beq $s0, $s6, indicate_collision3
+	addi $s6, $s7, 132
+	beq $s0, $s6, indicate_collision3
+	
+	addi $s5, $s0, 4
+	beq $s5, $s7, indicate_collision3
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision3
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision3
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision3
+	
+	addi $s5, $s0, 128
+	beq $s5, $s7, indicate_collision3
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision3
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision3
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision3
+	
+	addi $s5, $s0, 132
+	beq $s5, $s7, indicate_collision3
+	addi $s6, $s7, 4
+	beq $s5, $s6, indicate_collision3
+	addi $s6, $s7, 124
+	beq $s5, $s6, indicate_collision3
+	addi $s6, $s7, 128
+	beq $s5, $s6, indicate_collision3
+	
+	jr $ra	
 
 indicate_collision1:
 	addi $sp, $sp, -4
@@ -424,6 +551,30 @@ indicate_collision2:
 	addi $sp, $sp, 4
 	
 	jr $ra
+	
+indicate_collision3:
+	addi $sp, $sp, -4
+	sw $ra, 0($sp)
+	
+	jal reset_obstacle3
+	jal reset_ship
+	jal draw_collision
+	
+	li $v0, 32 
+	li $a0, 900
+	syscall
+	
+	jal draw_ship
+	
+	jal obstacle_random_position3
+	la $t7, obs3
+	sw $a0, 0($t7)
+	jal draw_obstacle3
+	
+	lw $ra, 0($sp)
+	addi $sp, $sp, 4
+	
+	jr $ra	
 
 draw_collision:
 	add $s3, $s0, $t0
