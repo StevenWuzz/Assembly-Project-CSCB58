@@ -12,298 +12,303 @@ ship: .space 4
 obs1: .space 4
 obs2: .space 4
 obs3: .space 4
+bar: .space 4
 .eqv BASE_ADDRESS 0x10008000 
 .text 
 	
 init: 	
-	la $t8, ship
-	li $t0, BASE_ADDRESS # $t0 stores the base address for display 
-	li $t1, 0xff0000 # $t1 stores the red colour code
-	li $t3, 0x000000
-	li $t4, 0x808080
+	li $t0, BASE_ADDRESS 	# $t0 stores the base address for display 
+	li $t1, 0xff0000 	# $t1 stores the red colour code
+	li $t3, 0x000000	# $t3 stores the black colour code
+	li $t4, 0x808080	# $t4 stores the grey colour code
 	
-	li $t2, 1920
-	sw $t2, 0($t8)
+	la $t8, ship 		# load the address of the ship object
+	li $t2, 1920		# set y coordinate to be at the middle of the screen, 
+				# and x coordinate to be at the most left of the screen
+				 
+	sw $t2, 0($t8)		# set the position above as the initial location of the ship
+	jal draw_ship		# draw the ship 
 	
-	li $t6, 0x00ffff00
+	li $t6, 0x00ffff00	# $t6 stores the yellow colour code
 	
-	jal obstacle_random_position1
-	la $t8, obs1
-	sw $a0, 0($t8)
-	jal draw_obstacle1
+	jal obstacle_random_position1	# generate a random position for the first obstacle
+	la $t8, obs1			# load the address of the first obstacle
+	sw $a0, 0($t8)			# set the random position as the initial location of the first obstacle
+	jal draw_obstacle1		# draw the first obstacle
 	
-	jal obstacle_random_position2
-	la $t8, obs2
-	sw $a0, 0($t8)
-	jal draw_obstacle2
+	jal obstacle_random_position2 	# generate a random position for the second obstacle
+	la $t8, obs2			# load the address of the second obstacle
+	sw $a0, 0($t8)			# set the random position as the initial location of the second obstacle
+	jal draw_obstacle2		# draw the second obstacle
 	
-	jal obstacle_random_position3
-	la $t8, obs3
-	sw $a0, 0($t8)
-	jal draw_obstacle3
+	jal obstacle_random_position3	# generate a random position for the third obstacle
+	la $t8, obs3			# load the address of the third obstacle
+	sw $a0, 0($t8)			# set the random position as the initial location of the third obstacle
+	jal draw_obstacle3		# draw the third obstacle
 	
-	jal draw_ship
-	
-	j main_loop
-	j end
+	j main_loop			# directly jump to the main loop
+	j end	
 	
 obstacle_random_position1:
-	li $v0, 42
+	li $v0, 42			# generate a random number
 	li $a0, 0
-	li $a1, 10
+	li $a1, 10			# set the upper bound to be 10
 	syscall
 	
-	li $s1, 128
+	li $s1, 128			# position = 120 + 128 * random number
 	mult $s1, $a0
 	mflo $a0
 	addi $a0, $a0, 120
 	
-	jr $ra
+	jr $ra				# jump back to the original calling location
 	
 obstacle_random_position2:
-	li $v0, 42
-	li $a0, 0
-	li $a1, 10
+	li $v0, 42			# generate a random number				
+	li $a0, 0			
+	li $a1, 10			# set the upper bound to be 10
 	syscall
 	
-	addi $a0, $a0, 10
+	addi $a0, $a0, 10		# add the generated random number by 10 to get into the middle range 
 	
-	li $s1, 128
+	li $s1, 128			# position = 120 + 128 * random number
 	mult $s1, $a0
 	mflo $a0
 	addi $a0, $a0, 120
 	
-	jr $ra
+	jr $ra				# jump back to the original calling location
 	
 obstacle_random_position3:
-	li $v0, 42
+	li $v0, 42			# generate a random number
 	li $a0, 0
-	li $a1, 10
+	li $a1, 10			# set the upper bound to be 10
 	syscall
 	
-	addi $a0, $a0, 20
+	addi $a0, $a0, 20		# add the generated random number by 20 to get into the last range 
 	
-	li $s1, 128
+	li $s1, 128			# position = 120 + 128 * random number
 	mult $s1, $a0
 	mflo $a0
 	addi $a0, $a0, 120
 	
-	jr $ra	
+	jr $ra				# jump back to the original calling location
 	
 main_loop:
-	jal check_input
+	jal check_input			# check for the keyboard input
 	
-	jal check_collision_obstacle1
-	jal move_obstacle1
-	jal check_collision_obstacle2
-	jal move_obstacle2
-	jal check_collision_obstacle3
-	jal move_obstacle3
+	jal check_collision_obstacle1	# check for collisions between the fist obstacle and the ship
+	jal move_obstacle1		# move the first obstacle one step to the left
+	jal check_collision_obstacle2	# check for collisions between the second obstacle and the ship
+	jal move_obstacle2		# move the second obstalce one step to the left
+	jal check_collision_obstacle3	# check for collisions between the third obstacle and the ship
+	jal move_obstacle3		# move the third obstacle one step to the left
 	
-	li $v0, 32 
+	li $v0, 32 			# call the sleep function
 	li $a0, 40
 	syscall
 	
-	j main_loop
+	j main_loop			# jump back to the main loop to keep on looping 
 	
 reset_ship:
-	la $t8, ship
-	lw $s0, 0($t8)
-	add $s2, $s0, $t0
-	sw $t3, 0($s2)
-	sw $t3, 4($s2)
+	la $t8, ship			# load the address of the ship
+	lw $s0, 0($t8)			# load the current position of the ship
+	add $s2, $s0, $t0		# add the current position to the base address and store it in $s2
+	sw $t3, 0($s2)			# remove the ship by painting the current position as black 
+	sw $t3, 4($s2)			
 	sw $t3, 128($s2)
 	sw $t3, 132($s2)
-	jr $ra	
+	jr $ra				# jump back to the caller 
 	
 draw_ship:
-	la $t8, ship
-	lw $s0, 0($t8)
-	add $s1, $s0, $t0
-	sw $t1, 0($s1)
+	la $t8, ship			# load the address of the ship
+	lw $s0, 0($t8)			# store the desired offset for the position of the ship
+	add $s1, $s0, $t0		# add the offset to the base address to get the actual position of the ship
+	sw $t1, 0($s1)			# draw the ship at that position
 	sw $t1, 4($s1)
 	sw $t1, 128($s1)
 	sw $t1, 132($s1)
-	jr $ra	
+	jr $ra				# jump back to the caller
 	
 draw_obstacle1:
-	la $t8, obs1
-	lw $s0, 0($t8)
-	add $s2, $s0, $t0
-	sw $t4, 0($s2)
+	la $t8, obs1			# load the address of the first obstacle
+	lw $s0, 0($t8)			# store the desired offset for the position of the first obstacle
+	add $s2, $s0, $t0		# add the offset to the base address to get the actual position of the first obstacle
+	sw $t4, 0($s2)			# draw the first obstacle at that position
 	sw $t4, 4($s2)
 	sw $t4, 128($s2)
 	sw $t4, 132($s2)
-	jr $ra
+	jr $ra				# jumo back to the caller
 	
 draw_obstacle2:
-	la $t8, obs2
-	lw $s0, 0($t8)
-	add $s2, $s0, $t0
-	sw $t4, 0($s2)
-	sw $t4, 4($s2)
+	la $t8, obs2			# load the address of the second obstacle
+	lw $s0, 0($t8)			# store the desired offset for the position of the second obstacle
+	add $s2, $s0, $t0		# add the offset to the base address to get the actual position of the second obstacle
+	sw $t4, 0($s2)			# draw the second obstacle at that position
+	sw $t4, 4($s2)			
 	sw $t4, 128($s2)
 	sw $t4, 132($s2)
-	jr $ra
+	jr $ra				# jump back to the caller
 	
 draw_obstacle3:
-	la $t8, obs3
-	lw $s0, 0($t8)
-	add $s2, $s0, $t0
-	sw $t4, 0($s2)
+	la $t8, obs3			# load the address of the third obstacle
+	lw $s0, 0($t8)			# store the desired offset for the position of the third obstacle
+	add $s2, $s0, $t0		# add the offset to the base address to get the actual position of the third obstacle
+	sw $t4, 0($s2)			# draw the third obstacle at that position
 	sw $t4, 4($s2)
 	sw $t4, 128($s2)
 	sw $t4, 132($s2)
-	jr $ra	
+	jr $ra				# jump back to the caller
+	
+draw_health_bar:
+	
 	
 reset_obstacle1:
-	la $t8, obs1
-	lw $s0, 0($t8)
-	add $s1, $s0, $t0
-	sw $t3, 0($s1)
+	la $t8, obs1			# load the address of the first obstacle
+	lw $s0, 0($t8)			# store the desired offset for the position of the third obstacle
+	add $s1, $s0, $t0		# add the offset to the base address to get the actual position of the third obstacle
+	sw $t3, 0($s1)			# reset the current position of the first obstacle by turning it to black
 	sw $t3, 4($s1)
 	sw $t3, 128($s1)
 	sw $t3, 132($s1)
-	jr $ra	
+	jr $ra				# jump back to the caller
 	
 reset_obstacle2:
-	la $t8, obs2
-	lw $s0, 0($t8)
-	add $s1, $s0, $t0
-	sw $t3, 0($s1)
+	la $t8, obs2			# load the address of the second obstacle
+	lw $s0, 0($t8)			# store the desired offset for the position of the second obstacle
+	add $s1, $s0, $t0		# add the offset to the base address to get the actual position of the second obstacle
+	sw $t3, 0($s1)			# reset the current position of the second obstacle by turning it to black
 	sw $t3, 4($s1)
 	sw $t3, 128($s1)
 	sw $t3, 132($s1)
-	jr $ra	
+	jr $ra				# jump back to the caller
 	
 reset_obstacle3:
-	la $t8, obs3
-	lw $s0, 0($t8)
-	add $s1, $s0, $t0
-	sw $t3, 0($s1)
+	la $t8, obs3			# load the address of the third obstacle
+	lw $s0, 0($t8)			# store the desired offset for the position of the third obstacle
+	add $s1, $s0, $t0		# add the offset to the base address to get the actual position of the third obstacle
+	sw $t3, 0($s1)			# reset the current position of the third obstacle by turning it to black
 	sw $t3, 4($s1)
 	sw $t3, 128($s1)
 	sw $t3, 132($s1)
-	jr $ra		
+	jr $ra				# jump back to the caller
 
 move_obstacle1:
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	jal reset_obstacle1
-	la $t8, obs1
-	lw $s0, 0($t8)
+	addi $sp, $sp, -4		# make space in the stack
+	sw $ra, 0($sp)			# push $ra to the stack
+	jal reset_obstacle1		# call the function to turn the current position of the first obstacle into black
+	la $t8, obs1			# load the address of the first obstacle
+	lw $s0, 0($t8)			# store the desired offset 
 	
-	li $s1, 128
+	li $s1, 128			# checking for the left boundary of the screen
 	div $s0, $s1
 	mfhi $s3
-	beq $s3, 0, generate_new_obstacle1
-	j move_obstacle1_left
+	beq $s3, 0, generate_new_obstacle1	# if the first obstacle is out of the left boundary, then generate a new obstacle 
+	j move_obstacle1_left			# finally, call the function to move the current position of the first obstacle to the left
 	
 move_obstacle2:
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	jal reset_obstacle2
-	la $t8, obs2
-	lw $s0, 0($t8)
-	
-	li $s1, 128
+	addi $sp, $sp, -4		# make space in the stack
+	sw $ra, 0($sp)			# push $ra to the stack
+	jal reset_obstacle2		# call the function to turn the current position of the second obstacle into black
+	la $t8, obs2			# load the address of the second obstacle
+	lw $s0, 0($t8)			# store the desired offset 
+	s
+	li $s1, 128			# checking for the left boundary of the screen
 	div $s0, $s1
 	mfhi $s3
-	beq $s3, 0, generate_new_obstacle2
-	j move_obstacle2_left
+	beq $s3, 0, generate_new_obstacle2	# if the second obstacle is out of the left boundary, then generate a new obstacle 
+	j move_obstacle2_left			# finally, call the function to move the current position of the second obstacle to the left
 	
 move_obstacle3:
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
-	jal reset_obstacle3
-	la $t8, obs3
-	lw $s0, 0($t8)
-	
-	li $s1, 128
+	addi $sp, $sp, -4		# make space in the stack
+	sw $ra, 0($sp)			# push $ra to the stack
+	jal reset_obstacle3		# call the function to turn the current position of the third obstacle into black
+	la $t8, obs3			# load the address of the third obstacle
+	lw $s0, 0($t8)			# store the desired offset
+		
+	li $s1, 128			# checking for the left boundary of the screen
 	div $s0, $s1
 	mfhi $s3
-	beq $s3, 0, generate_new_obstacle3
-	j move_obstacle3_left	
+	beq $s3, 0, generate_new_obstacle3	# if the third obstacle is out of the left boundary, then generate a new obstacle 
+	j move_obstacle3_left			# finally, call the function to move the current position of the third obstacle to the left
 	
 move_obstacle1_left:	
-	addi $s1, $s0, -4
-	sw $s1, 0($t8)
-	jal draw_obstacle1
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	jr $ra
+	addi $s1, $s0, -4		# move the current position of the first obstacle to the left
+	sw $s1, 0($t8)			# store that new position of the first obstacle
+	jal draw_obstacle1		# draw the new first obstacle at that new position
+	lw $ra, 0($sp)			# pop $ra off the stack
+	addi $sp, $sp, 4		# claim the space back	
+	jr $ra				# jump back to the caller
 	
 move_obstacle2_left:	
-	addi $s1, $s0, -4
-	sw $s1, 0($t8)
-	jal draw_obstacle2
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	jr $ra
+	addi $s1, $s0, -4		# move the current position of the second obstacle to the left
+	sw $s1, 0($t8)			# store that new position of the second obstacle
+	jal draw_obstacle2		# draw the new second obstacle at that new position
+	lw $ra, 0($sp)			# pop $ra off the stack
+	addi $sp, $sp, 4		# claim the space back	
+	jr $ra				# jump back to the caller
 	
 move_obstacle3_left:	
-	addi $s1, $s0, -4
-	sw $s1, 0($t8)
-	jal draw_obstacle3
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	jr $ra	
+	addi $s1, $s0, -4		# move the current position of the third obstacle to the left
+	sw $s1, 0($t8)			# store that new position of the third obstacle
+	jal draw_obstacle3		# draw the new third obstacle at that new position
+	lw $ra, 0($sp)			# pop $ra off the stack
+	addi $sp, $sp, 4		# claim the space back	
+	jr $ra				# jump back to the caller
 	
 generate_new_obstacle1:
-	jal obstacle_random_position1
-	add $s0, $0, $a0
-	addi $s0, $s0, 4
-	j move_obstacle1_left
+	jal obstacle_random_position1	# call the function to generate random position for the first obstacle
+	add $s0, $0, $a0		# transfer that random position to $s0
+	addi $s0, $s0, 4		# set back the first obstacle to the right by one position
+	j move_obstacle1_left		# now move the first obstacle to the left
 
 generate_new_obstacle2:
-	jal obstacle_random_position2
-	add $s0, $0, $a0
-	addi $s0, $s0, 4
-	j move_obstacle2_left
+	jal obstacle_random_position2	# call the function to generate random position for the second obstacle
+	add $s0, $0, $a0		# transfer that random position to $s0
+	addi $s0, $s0, 4		# set back the second obstacle to the right by one position
+	j move_obstacle2_left		# now move the second obstacle to the left
 	
 generate_new_obstacle3:
-	jal obstacle_random_position3
-	add $s0, $0, $a0
-	addi $s0, $s0, 4
-	j move_obstacle3_left	
+	jal obstacle_random_position3	# call the function to generate random position for the third obstacle
+	add $s0, $0, $a0		# transfer that random position to $s0
+	addi $s0, $s0, 4		# set back the third obstacle to the right by one position
+	j move_obstacle3_left		# now move the third obstacle to the left
 			
 check_input:
-	li $t9, 0xffff0000 
+	li $t9, 0xffff0000 		# check for an input to the keyboard
 	lw $t8, 0($t9)
-	beq $t8, 1, keypress_happened
+	beq $t8, 1, keypress_happened	# if there is an input, execute keypress_happened
 	
 return_to_loop:
 	jr $ra
 	
 keypress_happened:
-	lw $t2, 4($t9)
-	beq $t2, 0x77, respond_to_w
-	beq $t2, 0x61, respond_to_a
-	beq $t2, 0x73, respond_to_s
-	beq $t2, 0x64, respond_to_d
-	beq $t2, 0x70, restart
+	lw $t2, 4($t9)		
+	beq $t2, 0x77, respond_to_w	#if the input was w, then execute respond_to_w
+	beq $t2, 0x61, respond_to_a	#if the input was a, then execute respond_to_a
+	beq $t2, 0x73, respond_to_s	#if the input was s, then execute respond_to_s
+	beq $t2, 0x64, respond_to_d	#if the input was d, then execute respond_to_d
+	beq $t2, 0x70, restart		#if the input was p, then execute restart to restart the game
 
 restart:
-	jal reset_ship
-	jal reset_obstacle1
-	jal reset_obstacle2
-	jal reset_obstacle3
+	jal reset_ship			# call the function to reset the current position of the ship
+	jal reset_obstacle1		# call the function to reset the current position of the first obstacle
+	jal reset_obstacle2		# call the function to reset the current position of the second obstacle
+	jal reset_obstacle3		# call the function to reset the current position of the third obstacle
 	
-	li $v0, 32 
+	li $v0, 32 			# sleep the game for 0.6 seconds
 	li $a0, 600
 	syscall
 	
-	j init
+	j init				# jump back to the initial state of the game
 	
 respond_to_w:
-	la $t8, ship
-	lw $s0, 0($t8)
+	la $t8, ship			# load the address of the ship
+	lw $s0, 0($t8)			# store the desired offset 
 	
-	addi $s1, $s0, -128
-	blt $s1, $0, return_to_loop
+	addi $s1, $s0, -128		# attempt to move the ship upward
+	blt $s1, $0, return_to_loop	# if the ship goes beyond the upper boundary of the screen, then execute return_to_loop
 	
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
+	addi $sp, $sp, -4		# make a new space for the stack
+	sw $ra, 0($sp)			# push $ra to the stack
 	
 	jal reset_ship
 	sw $s1, 0($t8)
