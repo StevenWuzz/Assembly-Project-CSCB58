@@ -52,8 +52,10 @@ init:
 obstacle_random_position1:
 	li $v0, 42			# generate a random number
 	li $a0, 0
-	li $a1, 10			# set the upper bound to be 10
+	li $a1, 7			# set the upper bound to be 7
 	syscall
+	
+	addi $a0, $a0, 3		# add the generated random number by 3 to create some space at the top for the health ba
 	
 	li $s1, 128			# position = 120 + 128 * random number
 	mult $s1, $a0
@@ -210,7 +212,7 @@ move_obstacle2:
 	jal reset_obstacle2		# call the function to turn the current position of the second obstacle into black
 	la $t8, obs2			# load the address of the second obstacle
 	lw $s0, 0($t8)			# store the desired offset 
-	s
+	
 	li $s1, 128			# checking for the left boundary of the screen
 	div $s0, $s1
 	mfhi $s3
@@ -343,7 +345,7 @@ respond_to_s:
 	la $t8, ship			# load the address of the ship
 	lw $s0, 0($t8)			# load the offset stored in the address of the ship
 	
-	addi $s1, $s0, 128		# attempt to move the ship downward
+	addi $s1, $s0, 124		# attempt to move the ship downward
 	li $s3, 3964
 	bgt $s1, $s3, return_to_loop	# if the ship goes beyond the bottom boundary of the screen, then execute return_to_loop instead
 	
@@ -523,72 +525,72 @@ indicate_collision1:
 	
 	jal draw_ship				# call the function to draw the ship again with the original color
 	
-	jal obstacle_random_position1		# generate new first obstacle after the collision 
-	la $t7, obs1				# load the address 
-	sw $a0, 0($t7)
-	jal draw_obstacle1
+	jal obstacle_random_position1		# call the function to generate new random position for the first obstacle after the collision 
+	la $t7, obs1				# load the address of the first obstacle 
+	sw $a0, 0($t7)				# store the new random position into the address of the first obstacle
+	jal draw_obstacle1			# call the function to draw a new first obstacle 
 	
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
+	lw $ra, 0($sp)				# pop $ra off the stack
+	addi $sp, $sp, 4			# claim the space back
 	
-	jr $ra						
+	jr $ra					# jump to the caller	
 	
 indicate_collision2:
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
+	addi $sp, $sp, -4			# make a new space in the stack
+	sw $ra, 0($sp)				# push $ra into the stack 
 	
-	jal reset_obstacle2
-	jal reset_ship
-	jal draw_collision
+	jal reset_obstacle2			# call the function to reset the current position of the second obstacle
+	jal reset_ship				# call the function to reset the current position of the ship
+	jal draw_collision			# call the function to draw the ship with different color to indicate collision
 	
-	li $v0, 32 
+	li $v0, 32 				# sleep the program for 0.9 seconds
 	li $a0, 900
 	syscall
 	
-	jal draw_ship
+	jal draw_ship				# call the function to draw the ship again with the original color
 	
-	jal obstacle_random_position2
-	la $t7, obs2
-	sw $a0, 0($t7)
-	jal draw_obstacle2
+	jal obstacle_random_position2		# call the function to generate new random position for the second obstacle after the collision
+	la $t7, obs2				# load the address of the first obstacle 
+	sw $a0, 0($t7)				# store the new random position into the address of the second obstacle
+	jal draw_obstacle2			# call the function to draw a new second obstacle
 	
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
+	lw $ra, 0($sp)				# pop $ra off the stack
+	addi $sp, $sp, 4			# claim the space back
 	
-	jr $ra
+	jr $ra					# jump to the caller
 	
 indicate_collision3:
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
+	addi $sp, $sp, -4			# make a new space in the stack
+	sw $ra, 0($sp)				# push $ra into the stack
+		
+	jal reset_obstacle3			# call the function to reset the current position of the third obstacle
+	jal reset_ship				# call the fucntion to reset the current position of the ship
+	jal draw_collision			# call the function to draw the ship with different color to indicate collision
 	
-	jal reset_obstacle3
-	jal reset_ship
-	jal draw_collision
-	
-	li $v0, 32 
+	li $v0, 32 				# sleep the program for 0.9 seconds
 	li $a0, 900
 	syscall
 	
-	jal draw_ship
+	jal draw_ship				# call the function to draw the ship again with the original color
 	
-	jal obstacle_random_position3
-	la $t7, obs3
-	sw $a0, 0($t7)
-	jal draw_obstacle3
+	jal obstacle_random_position3		# call the function to generate new random position for the third obstacle after the collision
+	la $t7, obs3				# load the address of the third obstacle
+	sw $a0, 0($t7)				# store the new random position into the address of the third obstacle 
+	jal draw_obstacle3			# call the function to draw a new third obstacle	
 	
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
+	lw $ra, 0($sp)				# pop $ra off the stack
+	addi $sp, $sp, 4			# claim the space back
 	
-	jr $ra	
+	jr $ra					# jump to the caller
 
 draw_collision:
-	add $s3, $s0, $t0
-	sw $t6, 0($s3)
+	add $s3, $s0, $t0			# add the desired offset to the base address to get the current position of the ship
+	sw $t6, 0($s3)				# draw the ship with different color to indicate collision
 	sw $t6, 4($s3)
 	sw $t6, 128($s3)
 	sw $t6, 132($s3)
 	
-	jr $ra
+	jr $ra					# jump to the caller
 		
 end: 	
 	li $v0, 10 # terminate the program gracefully
