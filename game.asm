@@ -23,6 +23,7 @@ init:
 	li $t3, 0x000000	# $t3 stores the black colour code
 	li $t4, 0x808080	# $t4 stores the grey colour code
 	li $t6, 0x00ffff00	# $t6 stores the yellow colour code
+	li $t5, 0x00ffffff      # $t5 stores the white colour code
 	
 	la $t8, ship 		# load the address of the ship object
 	li $t2, 1920		# set y coordinate to be at the middle of the screen, 
@@ -177,20 +178,20 @@ draw_health_bar:
 	jr $ra				# go back to the caller
 	
 reset_health_bar:
-	la $t8, bar
-	lw $s0, 0($t8)
-	add $s2, $s0, $t0
+	la $t8, bar			# load the address of the health bar
+	lw $s0, 0($t8)			# load the offset value from the address of the health bar
+	add $s2, $s0, $t0		# add the offset to the base address to get the actual position of the health bar
 	
-	sw $t3, 0($s2)
+	sw $t3, 0($s2)			# turn each bar into black color
 	sw $t3, 4($s2)
 	sw $t3, 8($s2)
 	sw $t3, 12($s2)
 	sw $t3, 16($s2)
 	
-	la $t7, damage
-	sw $0, 0($t7)
+	la $t7, damage			# load the address of the damage
+	sw $0, 0($t7)			# reset the damage's count back to 0
 	
-	jr $ra
+	jr $ra				# go back to the caller
 	
 reset_obstacle1:
 	la $t8, obs1			# load the address of the first obstacle
@@ -645,12 +646,151 @@ reduce_health:
 	jr $ra					# go back to the caller
 	
 game_over:
-	jal reset_ship
-	jal reset_health_bar
-	jal reset_obstacle1
-	jal reset_obstacle2
-	jal reset_obstacle3
-	j init 
+	jal reset_ship				# call the function to reset the position of the ship 
+	jal reset_health_bar			# call the function to reset the position of the health bar
+	jal reset_obstacle1			# call the function to reset the position of the first obstacle
+	jal reset_obstacle2			# call the function to reset the position of the second obstacle
+	jal reset_obstacle3			# call the function to reset the position of the third obstacle
+	
+	jal draw_RIP				# call the function to display "game over" screen
+	
+	j init 					# jump back to the initial state of the game
+	
+draw_RIP:
+	li $s0, 1832				# draw the letter 'R' 
+	addi $s1, $s0, 128
+	addi $s2, $s0, 4
+	addi $s3, $s0, 256
+	addi $s4, $s0, 384
+	
+	add $s0, $s0, $t0
+	sw $t5, 0($s0)
+	add $s1, $s1, $t0
+	sw $t5, 0($s1)
+	add $s2, $s2, $t0
+	sw $t5, 0($s2)
+	add $s3, $s3, $t0
+	sw $t5, 0($s3)
+	add $s4, $s4, $t0
+	sw $t5, 0($s4)
+	
+	
+	li $s0, 1844				# draw the letter 'I'
+	addi $s1, $s0, 128
+	addi $s2, $s0, 256
+	addi $s3, $s0, 384
+	
+	add $s0, $s0, $t0
+	sw $t5, 0($s0)
+	add $s1, $s1, $t0
+	sw $t5, 0($s1)
+	add $s2, $s2, $t0
+	sw $t5, 0($s2)
+	add $s3, $s3, $t0
+	sw $t5, 0($s3)
+	
+	
+	li $s0, 1852				# draw the letter 'P'
+	addi $s1, $s0, 128
+	addi $s2, $s0, 256
+	addi $s3, $s0, 384
+	addi $s4, $s0, 4
+	addi $s5, $s0, 8
+	addi $s6, $s0, 136
+	addi $s7, $s0, 264
+	addi $t9, $s0, 260
+	addi $t8, $s0, 256
+	
+	add $s0, $s0, $t0
+	sw $t5, 0($s0)
+	add $s1, $s1, $t0
+	sw $t5, 0($s1)
+	add $s2, $s2, $t0
+	sw $t5, 0($s2)
+	add $s3, $s3, $t0
+	sw $t5, 0($s3)
+	add $s4, $s4, $t0
+	sw $t5, 0($s4)
+	add $s5, $s5, $t0
+	sw $t5, 0($s5)
+	add $s6, $s6, $t0
+	sw $t5, 0($s6)
+	add $s7, $s7, $t0
+	sw $t5, 0($s7)
+	add $t9, $t9, $t0
+	sw $t5, 0($t9)
+	add $t8, $t8, $t0
+	sw $t5, 0($t8)
+	
+	li $v0, 32 				# sleep the game for 0.9 seconds
+	li $a0, 900
+	syscall
+	
+	li $s0, 1832				# erase the letter 'R'
+	addi $s1, $s0, 128
+	addi $s2, $s0, 4
+	addi $s3, $s0, 256
+	addi $s4, $s0, 384
+	
+	add $s0, $s0, $t0
+	sw $t3, 0($s0)
+	add $s1, $s1, $t0
+	sw $t3, 0($s1)
+	add $s2, $s2, $t0
+	sw $t3, 0($s2)
+	add $s3, $s3, $t0
+	sw $t3, 0($s3)
+	add $s4, $s4, $t0
+	sw $t3, 0($s4)
+	
+	li $s0, 1844				# erase the letter 'I'
+	addi $s1, $s0, 128
+	addi $s2, $s0, 256
+	addi $s3, $s0, 384
+	
+	add $s0, $s0, $t0
+	sw $t3, 0($s0)
+	add $s1, $s1, $t0
+	sw $t3, 0($s1)
+	add $s2, $s2, $t0
+	sw $t3, 0($s2)
+	add $s3, $s3, $t0
+	sw $t3, 0($s3)
+	
+	
+	li $s0, 1852				# erase the letter 'P'
+	addi $s1, $s0, 128
+	addi $s2, $s0, 256
+	addi $s3, $s0, 384
+	addi $s4, $s0, 4
+	addi $s5, $s0, 8
+	addi $s6, $s0, 136
+	addi $s7, $s0, 264
+	addi $t9, $s0, 260
+	addi $t8, $s0, 256
+	
+	add $s0, $s0, $t0
+	sw $t3, 0($s0)
+	add $s1, $s1, $t0
+	sw $t3, 0($s1)
+	add $s2, $s2, $t0
+	sw $t3, 0($s2)
+	add $s3, $s3, $t0
+	sw $t3, 0($s3)
+	add $s4, $s4, $t0
+	sw $t3, 0($s4)
+	add $s5, $s5, $t0
+	sw $t3, 0($s5)
+	add $s6, $s6, $t0
+	sw $t3, 0($s6)
+	add $s7, $s7, $t0
+	sw $t3, 0($s7)
+	add $t9, $t9, $t0
+	sw $t3, 0($t9)
+	add $t8, $t8, $t0
+	sw $t3, 0($t8)
+	
+	jr $ra					# go back to the caller
 	
 end: 	
 	li $v0, 10 # terminate the program gracefully
