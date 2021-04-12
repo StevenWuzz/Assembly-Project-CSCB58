@@ -60,7 +60,7 @@ obstacle_random_position1:
 	mflo $a0
 	addi $a0, $a0, 120
 	
-	jr $ra				# jump back to the original calling location
+	jr $ra				# go back to the original calling location
 	
 obstacle_random_position2:
 	li $v0, 42			# generate a random number				
@@ -75,7 +75,7 @@ obstacle_random_position2:
 	mflo $a0
 	addi $a0, $a0, 120
 	
-	jr $ra				# jump back to the original calling location
+	jr $ra				# go back to the original calling location
 	
 obstacle_random_position3:
 	li $v0, 42			# generate a random number
@@ -90,7 +90,7 @@ obstacle_random_position3:
 	mflo $a0
 	addi $a0, $a0, 120
 	
-	jr $ra				# jump back to the original calling location
+	jr $ra				# go back to the original calling location
 	
 main_loop:
 	jal check_input			# check for the keyboard input
@@ -116,7 +116,7 @@ reset_ship:
 	sw $t3, 4($s2)			
 	sw $t3, 128($s2)
 	sw $t3, 132($s2)
-	jr $ra				# jump back to the caller 
+	jr $ra				# go back to the caller 
 	
 draw_ship:
 	la $t8, ship			# load the address of the ship
@@ -126,7 +126,7 @@ draw_ship:
 	sw $t1, 4($s1)
 	sw $t1, 128($s1)
 	sw $t1, 132($s1)
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 	
 draw_obstacle1:
 	la $t8, obs1			# load the address of the first obstacle
@@ -136,7 +136,7 @@ draw_obstacle1:
 	sw $t4, 4($s2)
 	sw $t4, 128($s2)
 	sw $t4, 132($s2)
-	jr $ra				# jumo back to the caller
+	jr $ra				# go back to the caller
 	
 draw_obstacle2:
 	la $t8, obs2			# load the address of the second obstacle
@@ -146,7 +146,7 @@ draw_obstacle2:
 	sw $t4, 4($s2)			
 	sw $t4, 128($s2)
 	sw $t4, 132($s2)
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 	
 draw_obstacle3:
 	la $t8, obs3			# load the address of the third obstacle
@@ -156,7 +156,7 @@ draw_obstacle3:
 	sw $t4, 4($s2)
 	sw $t4, 128($s2)
 	sw $t4, 132($s2)
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 	
 draw_health_bar:
 	
@@ -169,7 +169,7 @@ reset_obstacle1:
 	sw $t3, 4($s1)
 	sw $t3, 128($s1)
 	sw $t3, 132($s1)
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 	
 reset_obstacle2:
 	la $t8, obs2			# load the address of the second obstacle
@@ -179,7 +179,7 @@ reset_obstacle2:
 	sw $t3, 4($s1)
 	sw $t3, 128($s1)
 	sw $t3, 132($s1)
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 	
 reset_obstacle3:
 	la $t8, obs3			# load the address of the third obstacle
@@ -189,7 +189,7 @@ reset_obstacle3:
 	sw $t3, 4($s1)
 	sw $t3, 128($s1)
 	sw $t3, 132($s1)
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 
 move_obstacle1:
 	addi $sp, $sp, -4		# make space in the stack
@@ -205,7 +205,7 @@ move_obstacle1:
 	j move_obstacle1_left			# finally, call the function to move the current position of the first obstacle to the left
 	
 move_obstacle2:
-	addi $sp, $sp, -4		# make space in the stack
+	addi $sp, $sp, -4		# make a new space in the stack
 	sw $ra, 0($sp)			# push $ra to the stack
 	jal reset_obstacle2		# call the function to turn the current position of the second obstacle into black
 	la $t8, obs2			# load the address of the second obstacle
@@ -218,7 +218,7 @@ move_obstacle2:
 	j move_obstacle2_left			# finally, call the function to move the current position of the second obstacle to the left
 	
 move_obstacle3:
-	addi $sp, $sp, -4		# make space in the stack
+	addi $sp, $sp, -4		# make a new space in the stack
 	sw $ra, 0($sp)			# push $ra to the stack
 	jal reset_obstacle3		# call the function to turn the current position of the third obstacle into black
 	la $t8, obs3			# load the address of the third obstacle
@@ -236,7 +236,7 @@ move_obstacle1_left:
 	jal draw_obstacle1		# draw the new first obstacle at that new position
 	lw $ra, 0($sp)			# pop $ra off the stack
 	addi $sp, $sp, 4		# claim the space back	
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 	
 move_obstacle2_left:	
 	addi $s1, $s0, -4		# move the current position of the second obstacle to the left
@@ -244,7 +244,7 @@ move_obstacle2_left:
 	jal draw_obstacle2		# draw the new second obstacle at that new position
 	lw $ra, 0($sp)			# pop $ra off the stack
 	addi $sp, $sp, 4		# claim the space back	
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 	
 move_obstacle3_left:	
 	addi $s1, $s0, -4		# move the current position of the third obstacle to the left
@@ -252,7 +252,7 @@ move_obstacle3_left:
 	jal draw_obstacle3		# draw the new third obstacle at that new position
 	lw $ra, 0($sp)			# pop $ra off the stack
 	addi $sp, $sp, 4		# claim the space back	
-	jr $ra				# jump back to the caller
+	jr $ra				# go back to the caller
 	
 generate_new_obstacle1:
 	jal obstacle_random_position1	# call the function to generate random position for the first obstacle
@@ -302,229 +302,229 @@ restart:
 	
 respond_to_w:
 	la $t8, ship			# load the address of the ship
-	lw $s0, 0($t8)			# store the desired offset 
+	lw $s0, 0($t8)			# load the offset stored in the address of the ship
 	
 	addi $s1, $s0, -128		# attempt to move the ship upward
-	blt $s1, $0, return_to_loop	# if the ship goes beyond the upper boundary of the screen, then execute return_to_loop
+	blt $s1, $0, return_to_loop	# if the ship goes beyond the upper boundary of the screen, then execute return_to_loop instead
 	
-	addi $sp, $sp, -4		# make a new space for the stack
+	addi $sp, $sp, -4		# otherwise, make a new space in the stack
 	sw $ra, 0($sp)			# push $ra to the stack
 	
-	jal reset_ship
-	sw $s1, 0($t8)
-	jal draw_ship
+	jal reset_ship			# call the function to reset the position of the ship
+	sw $s1, 0($t8)			# store the offset for moving the ship upward into the address of the ship
+	jal draw_ship			# move the ship upward
 	
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	j return_to_loop
+	lw $ra, 0($sp)			# pop $ra off the stack
+	addi $sp, $sp, 4		# claim the space back
+	j return_to_loop		# jump to return_to_loop
 	
 respond_to_a:
-	la $t8, ship
-	lw $s0, 0($t8)
+	la $t8, ship			# load the address of the ship
+	lw $s0, 0($t8)			# load the offset stored in the address of the ship
 	
-	li $s1, 128
+	li $s1, 128			# attempt to move the ship to the left
 	div $s0, $s1
 	mfhi $s3
-	beq $s3, 0, return_to_loop
+	beq $s3, 0, return_to_loop	# if the ship goes beyond the left boundary of the screen, then execute return_to_loop instead
 	
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
+	addi $sp, $sp, -4		# otherwise, make a new space in the stack
+	sw $ra, 0($sp)			# push $ra to the stack
 	
-	jal reset_ship
-	addi $s1, $s0, -4
-	sw $s1, 0($t8)
-	jal draw_ship
+	jal reset_ship			# call the function to reset the current position of the ship
+	addi $s1, $s0, -4		# store the offset to move the ship to the right in $s1
+	sw $s1, 0($t8)			# store the offset into the address of the ship
+	jal draw_ship			# call the function to draw the new position of the ship
 	
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	j return_to_loop
+	lw $ra, 0($sp)			# pop $ra off the stack
+	addi $sp, $sp, 4		# claim the space back
+	j return_to_loop		# jump to return_to_loop
 
 respond_to_s:
-	la $t8, ship
-	lw $s0, 0($t8)
+	la $t8, ship			# load the address of the ship
+	lw $s0, 0($t8)			# load the offset stored in the address of the ship
 	
-	addi $s1, $s0, 128
+	addi $s1, $s0, 128		# attempt to move the ship downward
 	li $s3, 3964
-	bgt $s1, $s3, return_to_loop
+	bgt $s1, $s3, return_to_loop	# if the ship goes beyond the bottom boundary of the screen, then execute return_to_loop instead
 	
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
+	addi $sp, $sp, -4		# otherwise, make a new space in the stack
+	sw $ra, 0($sp)			# push $ra to the stack
 	
-	jal reset_ship
-	sw $s1, 0($t8)
-	jal draw_ship
+	jal reset_ship			# call the function to reset the current position of the ship
+	sw $s1, 0($t8)			# store the offset to move the ship downward in the address of the ship
+	jal draw_ship			# call the function to draw the new position of the ship
 	
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	j return_to_loop
+	lw $ra, 0($sp)			# pop $ra off the stack
+	addi $sp, $sp, 4		# claim the space back	
 	
 respond_to_d:
-	la $t8, ship
-	lw $s0, 0($t8)
+	la $t8, ship			# load the address of the ship
+	lw $s0, 0($t8)			# load the offset stored in the address of the ship
 	
-	li $s1, 128
+	li $s1, 128			# attempt to move the ship to the right
 	addi $s4, $s0, 8
 	div $s4, $s1
 	mfhi $s3
-	beq $s3, 0, return_to_loop
+	beq $s3, 0, return_to_loop	# if the ship goes beyond the right boundary of the screen, then execute return_to_loop instead
 	
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
+	addi $sp, $sp, -4		# otherwise, make a new space in the stack
+	sw $ra, 0($sp)			# push $ra to the stack
 	
-	jal reset_ship
-	addi $s1, $s0, 4
-	sw $s1, 0($t8)
-	jal draw_ship
+	jal reset_ship			# call the function to reset the current position of the ship
+	addi $s1, $s0, 4		# store the offset to move the ship to the right in $s1
+	sw $s1, 0($t8)			# transfer the offset to move the ship to the right to the address of the ship
+	jal draw_ship			# call the function to draw the new position of the ship
 	
-	lw $ra, 0($sp)
-	addi $sp, $sp, 4
-	j return_to_loop
+	lw $ra, 0($sp)			# pop $ra off the stack
+	addi $sp, $sp, 4		# claim the space back
+	j return_to_loop		# jump to return_to_loop
 	
 check_collision_obstacle1:
-	la $t8, ship
-	la $t7, obs1
-	lw $s0, 0($t8)
-	lw $s7, 0($t7)
+	la $t8, ship			# load the address of the ship
+	la $t7, obs1			# load the address of the first obstacle
+	lw $s0, 0($t8)			# load the offset stored in the address of the ship
+	lw $s7, 0($t7)			# load the offset stored in the address of the first obstacle
 	
-	beq $s0, $s7, indicate_collision1
-	addi $s6, $s7, 4
-	beq $s0, $s6, indicate_collision1
+	beq $s0, $s7, indicate_collision1	# check if the ship's top-left position overlaps with the first obstacle's top-left position
+	addi $s6, $s7, 4			
+	beq $s0, $s6, indicate_collision1	# check if the ship's top-left position overlaps with the first obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s0, $s6, indicate_collision1
+	beq $s0, $s6, indicate_collision1	# check if the ship's top-left position overlaps with the first obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s0, $s6, indicate_collision1
+	beq $s0, $s6, indicate_collision1	# check if the ship's top-left position overlaps with the first obstacle's bottom-right position
 	
-	addi $s5, $s0, 4
-	beq $s5, $s7, indicate_collision1
+	addi $s5, $s0, 4			
+	beq $s5, $s7, indicate_collision1	# check if the ship's top-right position overlaps with the first obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision1
+	beq $s5, $s6, indicate_collision1	# check if the ship's top-right position overlaps with the first obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision1
+	beq $s5, $s6, indicate_collision1	# check if the ship's top-right position overlaps with the first obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s5, $s6, indicate_collision1
+	beq $s5, $s6, indicate_collision1	# check if the ship's top-right position overlaps with the first obstacle's bottom-right position
 	
-	addi $s5, $s0, 128
-	beq $s5, $s7, indicate_collision1
+	
+	addi $s5, $s0, 128			
+	beq $s5, $s7, indicate_collision1	# check if the ship's bottom-left position overlaps with the first obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision1
+	beq $s5, $s6, indicate_collision1	# check if the ship's bottom-left position overlaps with the first obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision1
+	beq $s5, $s6, indicate_collision1	# check if the ship's bottom-left position overlaps with the first obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s5, $s6, indicate_collision1
+	beq $s5, $s6, indicate_collision1	# check if the ship's bottom-left position overlaps with the first obstacle's bottom-right position
 	
-	addi $s5, $s0, 132
-	beq $s5, $s7, indicate_collision1
-	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision1
-	addi $s6, $s7, 124
-	beq $s5, $s6, indicate_collision1
+	addi $s5, $s0, 132			
+	beq $s5, $s7, indicate_collision1	# check if the ship's bottom-right position overlaps with the first obstacle's top-left position
+	addi $s6, $s7, 4			
+	beq $s5, $s6, indicate_collision1	# check if the ship's bottom-right position overlaps with the first obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision1
+	beq $s5, $s6, indicate_collision1	# check if the ship's bottom-right position overlaps with the first obstacle's bottom-left position
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision1	# check if the ship's bottom-right position overlaps with the first obstacle's bottom-right position
 	
-	jr $ra
+	jr $ra					# go back to the caller
 	
 check_collision_obstacle2:
-	la $t8, ship
-	la $t7, obs2
-	lw $s0, 0($t8)
-	lw $s7, 0($t7)
+	la $t8, ship				# load the address of the ship
+	la $t7, obs2				# load the address of the second obstacle
+	lw $s0, 0($t8)				# load the offset stored in the address of the ship
+	lw $s7, 0($t7)				# load the offset stored in the address of the second obstacle
 	
-	beq $s0, $s7, indicate_collision2
+	beq $s0, $s7, indicate_collision2	# check if the ship's top-left position overlaps with the second obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s0, $s6, indicate_collision2
+	beq $s0, $s6, indicate_collision2	# check if the ship's top-left position overlaps with the first obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s0, $s6, indicate_collision2
+	beq $s0, $s6, indicate_collision2	# check if the ship's top-left position overlaps with the first obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s0, $s6, indicate_collision2
+	beq $s0, $s6, indicate_collision2	# check if the ship's top-left position overlaps with the first obstacle's bottom-right position
 	
 	addi $s5, $s0, 4
-	beq $s5, $s7, indicate_collision2
+	beq $s5, $s7, indicate_collision2	# check if the ship's top-right position overlaps with the second obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision2
+	beq $s5, $s6, indicate_collision2	# check if the ship's top-right position overlaps with the second obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision2
+	beq $s5, $s6, indicate_collision2	# check if the ship's top-right position overlaps with the second obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s5, $s6, indicate_collision2
+	beq $s5, $s6, indicate_collision2	# check if the ship's top-right position overlaps with the second obstacle's bottom-right position
 	
 	addi $s5, $s0, 128
-	beq $s5, $s7, indicate_collision2
+	beq $s5, $s7, indicate_collision2	# check if the ship's bottom-left position overlaps with the second obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision2
+	beq $s5, $s6, indicate_collision2	# check if the ship's bottom-left position overlaps with the second obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision2
+	beq $s5, $s6, indicate_collision2	# check if the ship's bottom-left position overlaps with the second obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s5, $s6, indicate_collision2
+	beq $s5, $s6, indicate_collision2	# check if the ship's bottom-left position overlaps with the second obstacle's bottom-right position
 	
-	addi $s5, $s0, 132
-	beq $s5, $s7, indicate_collision2
+	addi $s5, $s0, 132			
+	beq $s5, $s7, indicate_collision2	# check if the ship's bottom-right position overlaps with the second obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision2
-	addi $s6, $s7, 124
-	beq $s5, $s6, indicate_collision2
+	beq $s5, $s6, indicate_collision2	# check if the ship's bottom-right position overlaps with the second obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision2
+	beq $s5, $s6, indicate_collision2	# check if the ship's bottom-right position overlaps with the second obstacle's bottom-left position
+	addi $s6, $s7, 132
+	beq $s5, $s6, indicate_collision2	# check if the ship's bottom-right position overlaps with the second obstacle's bottom-right position
 	
-	jr $ra
+	jr $ra					# go back to the caller
 	
 check_collision_obstacle3:
-	la $t8, ship
-	la $t7, obs3
-	lw $s0, 0($t8)
-	lw $s7, 0($t7)
+	la $t8, ship				# load address of the ship
+	la $t7, obs3				# load address of the third obstacle
+	lw $s0, 0($t8)				# load the offset stored in the address of the ship
+	lw $s7, 0($t7)				# load the offset stored in the address of the second obstacle 
 	
-	beq $s0, $s7, indicate_collision3
+	beq $s0, $s7, indicate_collision3	# check if the ship's top-left position overlaps with the third obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s0, $s6, indicate_collision3
+	beq $s0, $s6, indicate_collision3	# check if the ship's top-left position overlaps with the third obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s0, $s6, indicate_collision3
+	beq $s0, $s6, indicate_collision3	# check if the ship's top-left position overlaps with the third obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s0, $s6, indicate_collision3
+	beq $s0, $s6, indicate_collision3	# check if the ship's top-left position overlaps with the third obstacle's bottom-right position
 	
 	addi $s5, $s0, 4
-	beq $s5, $s7, indicate_collision3
+	beq $s5, $s7, indicate_collision3	# check if the ship's top-right position overlaps with the third obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's top-right position overlaps with the third obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's top-right position overlaps with the third obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's top-right position overlaps with the third obstacle's bottom-right position
 	
 	addi $s5, $s0, 128
-	beq $s5, $s7, indicate_collision3
+	beq $s5, $s7, indicate_collision3	# check if the ship's bottom-left position overlaps with the third obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-left position overlaps with the third obstacle's top-right position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-left position overlaps with the third obstacle's bottom-left position
 	addi $s6, $s7, 132
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-left position overlaps with the third obstacle's bottom-left position
 	
 	addi $s5, $s0, 132
-	beq $s5, $s7, indicate_collision3
+	beq $s5, $s7, indicate_collision3	# check if the ship's bottom-right position overlaps with the third obstacle's top-left position
 	addi $s6, $s7, 4
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-right position overlaps with the third obstacle's top-right position
 	addi $s6, $s7, 124
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-right position overlaps with the third obstacle's bottom-left position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision3
+	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-right position overlaps with the third obstacle's bottom-right position
 	
-	jr $ra	
+	jr $ra					# go back to the caller  
 
 indicate_collision1:
-	addi $sp, $sp, -4
-	sw $ra, 0($sp)
+	addi $sp, $sp, -4			# make a new space in the stack
+	sw $ra, 0($sp)				# push $ra into the stack
 	
-	jal reset_obstacle1
-	jal reset_ship
-	jal draw_collision
+	jal reset_obstacle1			# call the function to reset the current position of the first obstacle 
+	jal reset_ship				# call the function to reset the current position of the ship
+	jal draw_collision			# call the function to draw the ship with different color to indicate collision
 	
-	li $v0, 32 
+	li $v0, 32 				# sleep the program for 0.9 seconds
 	li $a0, 900
 	syscall
 	
-	jal draw_ship
+	jal draw_ship				# call the function to draw the ship again with the original color
 	
-	jal obstacle_random_position1
-	la $t7, obs1
+	jal obstacle_random_position1		# generate new first obstacle after the collision 
+	la $t7, obs1				# load the address 
 	sw $a0, 0($t7)
 	jal draw_obstacle1
 	
