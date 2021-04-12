@@ -13,6 +13,7 @@ obs1: .space 4
 obs2: .space 4
 obs3: .space 4
 bar: .space 4
+damage: .word 0
 .eqv BASE_ADDRESS 0x10008000 
 .text 
 	
@@ -28,12 +29,12 @@ init:
 				# and x coordinate to be at the most left of the screen
 				 
 	sw $t2, 0($t8)		# set the position above as the initial location of the ship
-	jal draw_ship		# draw the ship 
+	jal draw_ship		# draw the ship
 	
-	la $t8, bar
-	li $t2, 180
-	sw $t2, 0($t8)
-	jal draw_health_bar
+	la $t8, bar		# load the address of the health bar
+	li $t2, 180		# set the offset for the position of the bar
+	sw $t2, 0($t8)		# store that offset into the address of the bar
+	jal draw_health_bar	# draw the health bar 
 	
 	jal obstacle_random_position1	# generate a random position for the first obstacle
 	la $t8, obs1			# load the address of the first obstacle
@@ -116,7 +117,7 @@ main_loop:
 	
 reset_ship:
 	la $t8, ship			# load the address of the ship
-	lw $s0, 0($t8)			# load the current position of the ship
+	lw $s0, 0($t8)			# load the offset from the address of the ship
 	add $s2, $s0, $t0		# add the current position to the base address and store it in $s2
 	sw $t3, 0($s2)			# remove the ship by painting the current position as black 
 	sw $t3, 4($s2)			
@@ -165,14 +166,30 @@ draw_obstacle3:
 	jr $ra				# go back to the caller
 	
 draw_health_bar:
-	la $t8, bar
-	lw $s0, 0($t8)
-	add $s2, $s0, $t0
-	sw $t1, 0($s2)
+	la $t8, bar			# load the address of the health bar
+	lw $s0, 0($t8)			# load the offset from the address of the health bar
+	add $s2, $s0, $t0		# add the offset to the base address to get the actual position of the health bar
+	sw $t1, 0($s2)			# draw the health bar which consists of 5 bars
 	sw $t1, 4($s2)
 	sw $t1, 8($s2)
 	sw $t1, 12($s2)
 	sw $t1, 16($s2)
+	jr $ra				# go back to the caller
+	
+reset_health_bar:
+	la $t8, bar
+	lw $s0, 0($t8)
+	add $s2, $s0, $t0
+	
+	sw $t3, 0($s2)
+	sw $t3, 4($s2)
+	sw $t3, 8($s2)
+	sw $t3, 12($s2)
+	sw $t3, 16($s2)
+	
+	la $t7, damage
+	sw $0, 0($t7)
+	
 	jr $ra
 	
 reset_obstacle1:
@@ -307,6 +324,7 @@ restart:
 	jal reset_obstacle1		# call the function to reset the current position of the first obstacle
 	jal reset_obstacle2		# call the function to reset the current position of the second obstacle
 	jal reset_obstacle3		# call the function to reset the current position of the third obstacle
+	jal reset_health_bar
 	
 	li $v0, 32 			# sleep the game for 0.6 seconds
 	li $a0, 600
@@ -571,7 +589,7 @@ indicate_collision2:
 	lw $ra, 0($sp)				# pop $ra off the stack
 	addi $sp, $sp, 4			# claim the space back
 	
-	jr $ra					# jump to the caller
+	jr $ra					# go back to the caller
 	
 indicate_collision3:
 	addi $sp, $sp, -4			# make a new space in the stack
@@ -596,7 +614,7 @@ indicate_collision3:
 	lw $ra, 0($sp)				# pop $ra off the stack
 	addi $sp, $sp, 4			# claim the space back
 	
-	jr $ra					# jump to the caller
+	jr $ra					# go back to the caller
 
 draw_collision:
 	add $s3, $s0, $t0			# add the desired offset to the base address to get the current position of the ship
@@ -605,19 +623,26 @@ draw_collision:
 	sw $t6, 128($s3)
 	sw $t6, 132($s3)
 	
-	jr $ra					# jump to the caller
+	jr $ra					# go back to the caller
 	
 reduce_health:
-	la $t8, bar
-	lw $s0, 0($t8)
-	add $s1, $s0, $t0
+	la $t8, bar				# load  the address of the bar 
+	lw $s0, 0($t8)				# load the offset from the address of the ship
+	add $s1, $s0, $t0			# add the offset to the base address to get the actual position of the health bar
 	
-	sw $t3, 0($s1)
+	la $t7, damage				# load the address of the damage
+	lw $s3, 0($t7)				# load the value of the damage
+	addi $s3, $s3, 1			# increment the damage's count
+	sw $s3, 0($t7)				# store the new damage's count back to variable damage
 	
-	addi $s0, $s0, 4
-	sw $s0, 0($t8)
 	
-	jr $ra
+	sw $t3, 0($s1)				# turn the left-most pixel of the health bar into black
+
+	
+	addi $s0, $s0, 4			# the health bar now starts at the next available pixel
+	sw $s0, 0($t8)				# store the next available pixel's offset into the address of the ship
+	
+	jr $ra					# go back to the caller
 	
 end: 	
 	li $v0, 10 # terminate the program gracefully
