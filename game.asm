@@ -14,6 +14,10 @@ obs2: .space 4
 obs3: .space 4
 bar: .space 4
 damage: .word 0
+flag_collision1: .word 0
+flag_collision2: .word 0
+flag_collision3: .word 0
+score: .word 0
 .eqv BASE_ADDRESS 0x10008000 
 .text 
 	
@@ -36,6 +40,16 @@ init:
 	li $t2, 180		# set the offset for the position of the bar
 	sw $t2, 0($t8)		# store that offset into the address of the bar
 	jal draw_health_bar	# draw the health bar 
+	
+	la $t8, flag_collision1
+	sw $0, 0($t8)
+	la $t8, flag_collision2
+	sw $0, 0($t8)
+	la $t8, flag_collision3
+	sw $0, 0($t8)
+	
+	la $t8, score
+	sw $0, 0($t8)
 	
 	jal obstacle_random_position1	# generate a random position for the first obstacle
 	la $t8, obs1			# load the address of the first obstacle
@@ -110,6 +124,28 @@ main_loop:
 	jal check_collision_obstacle3	# check for collisions between the third obstacle and the ship
 	jal move_obstacle3		# move the third obstacle one step to the left
 	
+	li $t8, 1
+	la $t9, flag_collision1
+	beq $t9, $t8, collision_flagged
+	
+	la $t9, flag_collision2
+	beq $t9, $t8, collision_flagged
+	
+	la $t9, flag_collision3
+	beq $t9, $t8, collision_flagged
+	
+	la $t9, score
+	lw $t8, 0($t9)
+	addi $t8, $t8, 1
+	sw $t8, 0($t9)
+	 
+	li $v0, 32 			# call the sleep function
+	li $a0, 40
+	syscall
+	
+	j main_loop			# jump back to the main loop to keep on looping 
+	
+collision_flagged:
 	li $v0, 32 			# call the sleep function
 	li $a0, 40
 	syscall
@@ -175,7 +211,7 @@ draw_health_bar:
 	sw $t1, 8($s2)
 	sw $t1, 12($s2)
 	sw $t1, 16($s2)
-	jr $ra				# go back to the caller
+	jr $ra				# go back to the caller	
 	
 reset_health_bar:
 	la $t8, bar			# load the address of the health bar
@@ -325,7 +361,10 @@ restart:
 	jal reset_obstacle1		# call the function to reset the current position of the first obstacle
 	jal reset_obstacle2		# call the function to reset the current position of the second obstacle
 	jal reset_obstacle3		# call the function to reset the current position of the third obstacle
-	jal reset_health_bar
+	jal reset_health_bar		# call the function to reset the health bar
+	
+	la $t7, score			# load the address of the score
+	sw $0, 0($t7)			# reset the score count back to 0
 	
 	li $v0, 32 			# sleep the game for 0.6 seconds
 	li $a0, 600
@@ -538,7 +577,7 @@ check_collision_obstacle3:
 	addi $s6, $s7, 124
 	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-right position overlaps with the third obstacle's bottom-left position
 	addi $s6, $s7, 128
-	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-right position overlaps with the third obstacle's bottom-right position
+	beq $s5, $s6, indicate_collision3	# check if the ship's bottom-right position overlaps with the third obstacle's bottom-right position				
 	
 	jr $ra					# go back to the caller  
 
@@ -565,6 +604,11 @@ indicate_collision1:
 	lw $ra, 0($sp)				# pop $ra off the stack
 	addi $sp, $sp, 4			# claim the space back
 	
+		
+	la $t8, flag_collision1
+	li $t7, 1
+	sw $t7, 0($t8)	
+	
 	jr $ra					# jump to the caller	
 	
 indicate_collision2:
@@ -590,6 +634,10 @@ indicate_collision2:
 	lw $ra, 0($sp)				# pop $ra off the stack
 	addi $sp, $sp, 4			# claim the space back
 	
+	la $t8, flag_collision2
+	li $t7, 1
+	sw $t7, 0($t8)
+	
 	jr $ra					# go back to the caller
 	
 indicate_collision3:
@@ -614,6 +662,10 @@ indicate_collision3:
 	
 	lw $ra, 0($sp)				# pop $ra off the stack
 	addi $sp, $sp, 4			# claim the space back
+	
+	la $t8, flag_collision3
+	li $t7, 1
+	sw $t7, 0($t8)
 	
 	jr $ra					# go back to the caller
 
@@ -652,11 +704,14 @@ game_over:
 	jal reset_obstacle2			# call the function to reset the position of the second obstacle
 	jal reset_obstacle3			# call the function to reset the position of the third obstacle
 	
-	jal draw_RIP				# call the function to display "game over" screen
+	la $t7, score				# load the address of the score
+	sw $0, 0($t7)				# reset the score count back to 0
+	
+	jal draw_and_remove_RIP			# call the function to display "game over" screen
 	
 	j init 					# jump back to the initial state of the game
 	
-draw_RIP:
+draw_and_remove_RIP:
 	li $s0, 1832				# draw the letter 'R' 
 	addi $s1, $s0, 128
 	addi $s2, $s0, 4
