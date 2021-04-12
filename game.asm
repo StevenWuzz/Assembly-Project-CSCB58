@@ -635,14 +635,22 @@ reduce_health:
 	addi $s3, $s3, 1			# increment the damage's count
 	sw $s3, 0($t7)				# store the new damage's count back to variable damage
 	
-	
 	sw $t3, 0($s1)				# turn the left-most pixel of the health bar into black
+	li $s2, 5				
+	beq $s3, $s2, game_over
 
-	
 	addi $s0, $s0, 4			# the health bar now starts at the next available pixel
 	sw $s0, 0($t8)				# store the next available pixel's offset into the address of the ship
 	
 	jr $ra					# go back to the caller
+	
+game_over:
+	jal reset_ship
+	jal reset_health_bar
+	jal reset_obstacle1
+	jal reset_obstacle2
+	jal reset_obstacle3
+	j init 
 	
 end: 	
 	li $v0, 10 # terminate the program gracefully
