@@ -21,6 +21,7 @@ init:
 	li $t1, 0xff0000 	# $t1 stores the red colour code
 	li $t3, 0x000000	# $t3 stores the black colour code
 	li $t4, 0x808080	# $t4 stores the grey colour code
+	li $t6, 0x00ffff00	# $t6 stores the yellow colour code
 	
 	la $t8, ship 		# load the address of the ship object
 	li $t2, 1920		# set y coordinate to be at the middle of the screen, 
@@ -29,7 +30,10 @@ init:
 	sw $t2, 0($t8)		# set the position above as the initial location of the ship
 	jal draw_ship		# draw the ship 
 	
-	li $t6, 0x00ffff00	# $t6 stores the yellow colour code
+	la $t8, bar
+	li $t2, 180
+	sw $t2, 0($t8)
+	jal draw_health_bar
 	
 	jal obstacle_random_position1	# generate a random position for the first obstacle
 	la $t8, obs1			# load the address of the first obstacle
@@ -161,7 +165,15 @@ draw_obstacle3:
 	jr $ra				# go back to the caller
 	
 draw_health_bar:
-	
+	la $t8, bar
+	lw $s0, 0($t8)
+	add $s2, $s0, $t0
+	sw $t1, 0($s2)
+	sw $t1, 4($s2)
+	sw $t1, 8($s2)
+	sw $t1, 12($s2)
+	sw $t1, 16($s2)
+	jr $ra
 	
 reset_obstacle1:
 	la $t8, obs1			# load the address of the first obstacle
