@@ -530,6 +530,7 @@ indicate_collision1:
 	jal reset_obstacle1			# call the function to reset the current position of the first obstacle 
 	jal reset_ship				# call the function to reset the current position of the ship
 	jal draw_collision			# call the function to draw the ship with different color to indicate collision
+	jal reduce_health
 	
 	li $v0, 32 				# sleep the program for 0.9 seconds
 	li $a0, 900
@@ -554,6 +555,7 @@ indicate_collision2:
 	jal reset_obstacle2			# call the function to reset the current position of the second obstacle
 	jal reset_ship				# call the function to reset the current position of the ship
 	jal draw_collision			# call the function to draw the ship with different color to indicate collision
+	jal reduce_health
 	
 	li $v0, 32 				# sleep the program for 0.9 seconds
 	li $a0, 900
@@ -578,6 +580,7 @@ indicate_collision3:
 	jal reset_obstacle3			# call the function to reset the current position of the third obstacle
 	jal reset_ship				# call the fucntion to reset the current position of the ship
 	jal draw_collision			# call the function to draw the ship with different color to indicate collision
+	jal reduce_health
 	
 	li $v0, 32 				# sleep the program for 0.9 seconds
 	li $a0, 900
@@ -603,7 +606,19 @@ draw_collision:
 	sw $t6, 132($s3)
 	
 	jr $ra					# jump to the caller
-		
+	
+reduce_health:
+	la $t8, bar
+	lw $s0, 0($t8)
+	add $s1, $s0, $t0
+	
+	sw $t3, 0($s1)
+	
+	addi $s0, $s0, 4
+	sw $s0, 0($t8)
+	
+	jr $ra
+	
 end: 	
 	li $v0, 10 # terminate the program gracefully
 	syscall
