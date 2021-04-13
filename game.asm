@@ -14,10 +14,10 @@ obs2: .space 4
 obs3: .space 4
 bar: .space 4
 damage: .word 0
-flag_collision1: .word 0
-flag_collision2: .word 0
-flag_collision3: .word 0
 score: .word 0
+waiting_time: .word 0
+count: .word 0
+threshold: .word 0
 .eqv BASE_ADDRESS 0x10008000 
 .text 
 	
@@ -41,15 +41,19 @@ init:
 	sw $t2, 0($t8)		# store that offset into the address of the bar
 	jal draw_health_bar	# draw the health bar 
 	
-	la $t8, flag_collision1
-	sw $0, 0($t8)
-	la $t8, flag_collision2
-	sw $0, 0($t8)
-	la $t8, flag_collision3
-	sw $0, 0($t8)
+	la $t8, score		# load the address of score variable
+	sw $0, 0($t8)		# initialize the score to 0
 	
-	la $t8, score
-	sw $0, 0($t8)
+	la $t8, count		# load the address of count variable 
+	sw $0, 0($t8)		# initialize the count to 0
+	
+	la $t8, threshold	# load the address of threshold variable
+	li $s0, 10		# initialize the threshold to 10
+	sw $s0, 0($t8)
+	
+	la $t8, waiting_time	# load the address of waiting_time variable
+	li $t9, 70		# initialize the waiting time to 0.07 seconds 
+	sw $t9, 0($t8) 
 	
 	jal obstacle_random_position1	# generate a random position for the first obstacle
 	la $t8, obs1			# load the address of the first obstacle
@@ -124,34 +128,43 @@ main_loop:
 	jal check_collision_obstacle3	# check for collisions between the third obstacle and the ship
 	jal move_obstacle3		# move the third obstacle one step to the left
 	
-	li $t8, 1
-	la $t9, flag_collision1
-	beq $t9, $t8, collision_flagged
+	la $t8, count			# load the address of count variable
+	lw $t9, 0($t8)			# load the value of count 
 	
-	la $t9, flag_collision2
-	beq $t9, $t8, collision_flagged
-	
-	la $t9, flag_collision3
-	beq $t9, $t8, collision_flagged
-	
-	la $t9, score
-	lw $t8, 0($t9)
-	addi $t8, $t8, 1
-	sw $t8, 0($t9)
-	 
-	li $v0, 32 			# call the sleep function
-	li $a0, 40
+	la $t8, threshold		# load the address of threshold variable
+	lw $s5, 0($t8)			# load the value of threshold
+	bge $t9, $s5, decrease_waiting_time	# if the count is at least as big as the threshold, then decrease the waiting time
+
+	li $v0, 32 			# otherwise, just sleep the program for "waiting_time" miliseconds
+	la $s3, waiting_time
+	lw $s4, 0($s3)
+	add $a0, $0, $s4
 	syscall
 	
 	j main_loop			# jump back to the main loop to keep on looping 
 	
-collision_flagged:
-	li $v0, 32 			# call the sleep function
-	li $a0, 40
+decrease_waiting_time:
+	li $v0, 32 			
+	la $s6, waiting_time		# load the address of the waiting_time variable
+	lw $s7, 0($s6)			# load the value of waiting_time
+	
+	li $s5, 5			
+	sub $t9, $s7, $s5		# decrease the waiting time by 5 
+	sw $t9, 0($s6)			# store the reduced value to waiting_time variable
+	add $a0, $0, $t9		# now sleep the program with the new waiting_time variable
+	
+	la $t9, threshold		# load the address of the threshold variable
+	lw $t8, 0($t9)			# load the value of the threshold
+	addi $t8, $t8, 10		# increase the threshold by 10 
+	sw $t8, 0($t9)			# store the increased threshold value back to threshold variable
+	
+	la $t8, count			# load the address of count variable
+	sw $0, 0($t8)			# reset the count back to 0
+	
 	syscall
 	
-	j main_loop			# jump back to the main loop to keep on looping 
-	
+	j main_loop			# jump back tot the main loop to keep on looping
+
 reset_ship:
 	la $t8, ship			# load the address of the ship
 	lw $s0, 0($t8)			# load the offset from the address of the ship
@@ -326,18 +339,51 @@ generate_new_obstacle1:
 	jal obstacle_random_position1	# call the function to generate random position for the first obstacle
 	add $s0, $0, $a0		# transfer that random position to $s0
 	addi $s0, $s0, 4		# set back the first obstacle to the right by one position
+	
+	la $s3, score			# load the address of the score
+	lw $s4, 0($s3)			# load the current score 
+	addi $s4, $s4, 1		# increase the score by 1 point
+	sw $s4, 0($s3)			# store the increased score back to the score variable
+	
+	la $s3, count			# load the address of the count
+	lw $s4, 0($s3)			# load the current count
+	addi $s4, $s4, 1		# increase the count by 1 
+	sw $s4, 0($s3)			# store the increased count back to the count variable
+	
 	j move_obstacle1_left		# now move the first obstacle to the left
 
 generate_new_obstacle2:
 	jal obstacle_random_position2	# call the function to generate random position for the second obstacle
 	add $s0, $0, $a0		# transfer that random position to $s0
 	addi $s0, $s0, 4		# set back the second obstacle to the right by one position
+	
+	la $s3, score			# load the address of the score
+	lw $s4, 0($s3)			# load the current score 
+	addi $s4, $s4, 1		# increase the score by 1 point
+	sw $s4, 0($s3)			# store the increased score back to the score variable
+	
+	la $s3, count			# load the address of the count
+	lw $s4, 0($s3)			# load the current count
+	addi $s4, $s4, 1		# increase the count by 1 
+	sw $s4, 0($s3)			# store the increased count back to the count variable
+	
 	j move_obstacle2_left		# now move the second obstacle to the left
 	
 generate_new_obstacle3:
 	jal obstacle_random_position3	# call the function to generate random position for the third obstacle
 	add $s0, $0, $a0		# transfer that random position to $s0
 	addi $s0, $s0, 4		# set back the third obstacle to the right by one position
+	
+	la $s3, score			# load the address of the score
+	lw $s4, 0($s3)			# load the current score 
+	addi $s4, $s4, 1		# increase the score by 1 point
+	sw $s4, 0($s3)			# store the increased score back to the score variable
+	
+	la $s3, count			# load the address of the count
+	lw $s4, 0($s3)			# load the current count
+	addi $s4, $s4, 1		# increase the count by 1 
+	sw $s4, 0($s3)			# store the increased count back to the count variable
+	
 	j move_obstacle3_left		# now move the third obstacle to the left
 			
 check_input:
@@ -364,7 +410,10 @@ restart:
 	jal reset_health_bar		# call the function to reset the health bar
 	
 	la $t7, score			# load the address of the score
-	sw $0, 0($t7)			# reset the score count back to 0
+	sw $0, 0($t7)			# reset the score back to 0
+	
+	la $t7, count			# load the address of the count
+	sw $0, 0($t7)			# reset the count back to 0
 	
 	li $v0, 32 			# sleep the game for 0.6 seconds
 	li $a0, 600
@@ -604,11 +653,6 @@ indicate_collision1:
 	lw $ra, 0($sp)				# pop $ra off the stack
 	addi $sp, $sp, 4			# claim the space back
 	
-		
-	la $t8, flag_collision1
-	li $t7, 1
-	sw $t7, 0($t8)	
-	
 	jr $ra					# jump to the caller	
 	
 indicate_collision2:
@@ -634,10 +678,6 @@ indicate_collision2:
 	lw $ra, 0($sp)				# pop $ra off the stack
 	addi $sp, $sp, 4			# claim the space back
 	
-	la $t8, flag_collision2
-	li $t7, 1
-	sw $t7, 0($t8)
-	
 	jr $ra					# go back to the caller
 	
 indicate_collision3:
@@ -662,10 +702,6 @@ indicate_collision3:
 	
 	lw $ra, 0($sp)				# pop $ra off the stack
 	addi $sp, $sp, 4			# claim the space back
-	
-	la $t8, flag_collision3
-	li $t7, 1
-	sw $t7, 0($t8)
 	
 	jr $ra					# go back to the caller
 
@@ -706,6 +742,9 @@ game_over:
 	
 	la $t7, score				# load the address of the score
 	sw $0, 0($t7)				# reset the score count back to 0
+	
+	la $t7, count				# load the address of the count
+	sw $0, 0($t7)				# reset the count back to 0
 	
 	jal draw_and_remove_RIP			# call the function to display "game over" screen
 	
